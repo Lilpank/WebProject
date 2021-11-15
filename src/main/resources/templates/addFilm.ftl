@@ -1,19 +1,27 @@
 <#import "parts/common.ftl" as c>
 <@c.page>
-    <form method="post" action="/" enctype="multipart/form-data">
+    <form method="post" action="/addFilm" enctype="multipart/form-data">
         <div class="form-group">
             <div class="col-md-3 ">
                 <label>Write the name</label>
             </div>
             <div class="form-group col-md-6">
-                <input class="form-control" type="text" name="title" placeholder="Name film">
+                <input type="text" class="form-control ${(titleError??)?string('is-invalid', '')}"
+                       value="<#if film??>${film.title}</#if>" name="title" placeholder="Name film"/>
+                <#if titleError??>
+                    <div class="invalid-feedback">
+                        ${titleError!}
+                    </div>
+                </#if>
             </div>
-
             <div class="form-group col-md-6">
                 <i>Genres: </i>
                 <#list ["HORROR", "COMEDY", "THRILLER", "DOCUMENTARY", "DRAMA", "ADVENTURE", "WESTERN", "MUSICAL", "FANTASY"] as genre>
                     <div class="form-check form-check-inline">
-                        <label><input type="checkbox" name="${genre}">${genre}</label>
+                        <label>
+                            <input type="checkbox" value="" name="${genre}">
+                            ${genre!}
+                        </label>
                     </div>
                 </#list>
             </div>
@@ -22,13 +30,20 @@
                     <label>Insert a picture</label>
                 </div>
                 <div class="custom-file">
-                    <input type="file" class="custom-file-input" id="customFile" name="file">
-                    <label class="custom-file-label" for="customFile">Choose file</label>
+                    <input type="file" class="custom-file-input" id="validatedCustomFile"
+                           name="file" value="<#if film??>${film.filename!}</#if>">
+                    <label class="custom-file-label" for="validatedCustomFile">Choose file</label>
                 </div>
             </div>
             <div class="form-group col-md-6">
-                <textarea maxlength="500" class="form-control" name="description"
+                <textarea maxlength="500" class="form-control ${(descriptionError??)?string('is-invalid', '')}"
+                          name="description" value="<#if film??>${film.description}</#if>"
                           placeholder="description film"></textarea>
+                <#if descriptionError??>
+                    <div class="invalid-feedback">
+                        ${descriptionError!}
+                    </div>
+                </#if>
             </div>
             <div class="form-group col-md-6">
                 <input type="hidden" name="_csrf" value="${_csrf.token}"/>

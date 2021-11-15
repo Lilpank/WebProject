@@ -37,7 +37,7 @@ public class PosterController {
         }
 
         filmRepository.save(film);
-        model.addAttribute("mean_rating", getMean_rating(title));
+        model.addAttribute("mean_rating", ControllerUtils.getMean_rating(filmRepository.findByTitle(title)));
         model.addAttribute("film", film);
         return "pageFilm";
     }
@@ -65,29 +65,10 @@ public class PosterController {
         commentRepository.save(com);
 
 
-        model.addAttribute("mean_rating", getMean_rating(title));
+        model.addAttribute("mean_rating", ControllerUtils.getMean_rating(filmRepository.findByTitle(title)));
         model.addAttribute("film", filmRepository.findByTitleOrderByCommentsDesc(title));
         return "pageFilm";
     }
 
-    private Integer getMean_rating(String title) {
-        Film film = filmRepository.findByTitle(title);
-        int mean_rating = 0;
-        for (Rating ratings : film.getRating()) {
-            if (ratings.getValue() != null) {
-                mean_rating = mean_rating + ratings.getValue();
-            }
-        }
 
-        int count = 0;
-        if (film.getComments().size() != 0) {
-            for (Comment comm : film.getComments()) {
-                if (comm != null) {
-                    count = count + 1;
-                }
-            }
-            mean_rating = mean_rating / count;
-        }
-        return mean_rating;
-    }
 }

@@ -1,19 +1,26 @@
 package com.example.demo.controllers;
 
-import com.example.demo.models.Role;
 import com.example.demo.models.User;
 import com.example.demo.repos.UserRepository;
+import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.Collections;
+import javax.validation.Valid;
+import java.util.Map;
 
 @Controller
 public class RegistrationController {
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserService userService;
+
 
     @GetMapping("/registration")
     public String registration() {
@@ -21,16 +28,18 @@ public class RegistrationController {
     }
 
     @PostMapping("/registration")
-    public String addUser(User user) {
-        User userFromDatabase = userRepository.findByUsername(user.getUsername());
+    public String addUser(@Valid User user, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errorsMap = ControllerUtils.getErrors(bindingResult);
 
-        if (userFromDatabase != null) {
+            model.mergeAttributes(errorsMap);
             return "registration";
         }
 
-        user.setActive(true);
-        user.setRoles(Collections.singleton(Role.USER));
-        userRepository.save(user);
+        if (!userService.addUser(user)) {
+            model.addAttribute("usernameError", "User exists!");
+            return "registration";
+        }
 
         return "redirect:/login";
     }

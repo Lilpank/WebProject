@@ -1,6 +1,9 @@
 package com.example.demo.models;
 
+import org.hibernate.validator.constraints.Length;
+
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.Set;
 
 @Entity
@@ -8,7 +11,13 @@ public class Film {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    @NotBlank(message = "please fill the name film")
+    @Length(max = 255, message = "please fill the name film")
     private String title;
+
+    @NotBlank(message = "please fill the description film")
+    @Length(max = 4096, message = "please fill the description film")
     private String description;
 
     @ElementCollection(targetClass = Genres.class, fetch = FetchType.EAGER)
@@ -17,7 +26,6 @@ public class Film {
     private Set<Genres> genres;
 
     private String filename;
-
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")

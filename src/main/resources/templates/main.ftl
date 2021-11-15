@@ -1,5 +1,6 @@
 <#import "parts/common.ftl" as c>
 <#import "parts/card.ftl" as card>
+<#import "addFilm.ftl" as f>
 
 
 <@c.page>
