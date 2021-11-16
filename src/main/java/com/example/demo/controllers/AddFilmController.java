@@ -6,6 +6,7 @@ import com.example.demo.models.User;
 import com.example.demo.repos.FilmRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,12 +30,13 @@ public class AddFilmController {
     @Value("${upload.path}")
     private String uploadPath;
 
-
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/addFilm")
     public String getAddFilm() {
         return "addFilm";
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/addFilm")
     public String add(
             @AuthenticationPrincipal User user,
