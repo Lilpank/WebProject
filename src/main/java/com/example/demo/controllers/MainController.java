@@ -37,6 +37,7 @@ public class MainController {
         model.addAttribute("films", films);
         model.addAttribute("filter", filter);
 
+
         return "main";
     }
 }

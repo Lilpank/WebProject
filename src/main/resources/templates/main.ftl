@@ -16,8 +16,15 @@
                     <span>Name:</span>
                     <i>${film.title}</i>
                     <p>User rating of this movie:
-                        <#if mean_rating??>
-                            ${mean_rating!}
+                        <#if film.getRating()??>
+                            <#if !film.getRating()?size??>
+                                <#assign total = 0>
+                                <#list film.rating as item>
+                                    <#assign total += item.value>
+                                </#list>
+                                ${total / film.getRating()?size}
+
+                            </#if>
                         <#else >
                             no rating
                         </#if>

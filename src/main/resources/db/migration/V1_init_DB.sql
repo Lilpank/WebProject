@@ -58,6 +58,7 @@ create table usr
     username varchar(255) not null,
     primary key (id)
 );
+
 alter table if exists film_comments add constraint UK_e6f353hpbrpktmn44t5xxbnk0 unique (comments_id);
 
 alter table if exists film_rating add constraint UK_dk3fkvh4i800bo6cg6w7e68xy unique (rating_id);
@@ -83,3 +84,4 @@ alter table if exists genre_name add constraint FKkxdi7qqfqr19g7lvujdol5ses fore
 alter table if exists rating add constraint FKlgi9t6w691ggmgm5m5s5ebqjl foreign key (user_id) references usr;
 
 alter table if exists user_role add constraint FKfpm8swft53ulq2hl11yplpr5 foreign key (user_id) references usr;
+

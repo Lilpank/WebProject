@@ -1,7 +1,7 @@
 <#import "parts/common.ftl" as c>
 <#import  "parts/comment.ftl" as com>
 <#include "parts/security.ftl">
-
+<#import  "parts/editMovie.ftl" as edit>
 
 <@c.page>
     <div class="container">
@@ -20,15 +20,21 @@
                     by people
                 </p>
                 <p>
-                    <#if mean_rating!=0>
+                    <#if !film.getRating()?size??>
+                        <#assign total = 0>
+                        <#list film.rating as item>
+                            <#assign total += item.value>
+                        </#list>
                         User rating of this movie:
-                        ${mean_rating!}
+                        ${total / film.getRating()?size}
                     <#else >
                         you can be the first to rate.
                     </#if>
                 </p>
             </div>
             <div class="col-md-8">
+                <@edit.editMovie film.title film.author.getId()>
+                </@>
                 <div class="m-2">
                     <h1>
                         ${film.title}

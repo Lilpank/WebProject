@@ -1,10 +1,8 @@
 package com.example.demo.controllers;
 
 import com.example.demo.models.Film;
-import com.example.demo.models.Genres;
 import com.example.demo.models.User;
 import com.example.demo.repos.FilmRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,18 +15,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Map;
+
 
 @Controller
 public class AddFilmController {
-    @Autowired
-    private FilmRepository filmRepository;
+    private final FilmRepository filmRepository;
 
-    @Value("${upload.path}")
-    private String uploadPath;
+    public AddFilmController(FilmRepository filmRepository) {
+        this.filmRepository = filmRepository;
+    }
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/addFilm")
@@ -56,31 +53,8 @@ public class AddFilmController {
             return "addFilm";
 
         } else {
-            Set<String> genres = Arrays.stream(Genres.values())
-                    .map(Genres::name)
-                    .collect(Collectors.toSet());
-
-            Set<Genres> temp = new HashSet<>();
-            for (String key : form.keySet()) {
-                if (genres.contains(key)) {
-                    if (key != null) {
-                        temp.add(Genres.valueOf(key));
-                    }
-                }
-            }
-            film.setGenres(temp);
-
-            if (file != null && !Objects.requireNonNull(file.getOriginalFilename()).isEmpty()) {
-                File uploadDir = new File(uploadPath);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdir();
-                }
-                String uuidFile = UUID.randomUUID().toString();
-                String resultFilename = uuidFile + '.' + file.getOriginalFilename();
-
-                file.transferTo(new File(uploadPath + "/" + resultFilename));
-                film.setFilename(resultFilename);
-            }
+            film.setGenres(ControllerUtils.getSetGenres(form));
+            ControllerUtils.savePicture(film, file);
             model.addAttribute("film", null);
             filmRepository.save(film);
         }

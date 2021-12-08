@@ -8,17 +8,27 @@ import com.example.demo.repos.CommentRepository;
 import com.example.demo.repos.FilmRepository;
 import com.example.demo.repos.RatingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.util.*;
 
 @Controller
 @RequestMapping("/poster")
 public class PosterController {
+    @Value("${upload.path}")
+    private static String uploadPath;
+
     @Autowired
     private FilmRepository filmRepository;
     @Autowired
@@ -37,7 +47,6 @@ public class PosterController {
         }
 
         filmRepository.save(film);
-        model.addAttribute("mean_rating", ControllerUtils.getMean_rating(filmRepository.findByTitle(title)));
         model.addAttribute("film", film);
         return "pageFilm";
     }
@@ -64,11 +73,50 @@ public class PosterController {
         film.setComments(commentSet);
         commentRepository.save(com);
 
-
-        model.addAttribute("mean_rating", ControllerUtils.getMean_rating(filmRepository.findByTitle(title)));
         model.addAttribute("film", filmRepository.findByTitleOrderByCommentsDesc(title));
         return "pageFilm";
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("{title}/{user}")
+    public String getEditFilm(
+            @PathVariable String title,
+            @PathVariable User user,
+            Model model,
+            @RequestParam(required = false) Film film
+    ) {
+        Film oneFilm = filmRepository.findByTitle(title);
 
+        model.addAttribute("film", oneFilm);
+        return "pageFilmEdit";
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @RequestMapping("{title}/update")
+    public String updateFilm(
+            Model model,
+            @RequestParam("id") Film film,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam Map<String, String> form
+    ) throws URISyntaxException, IOException {
+        if (form.get("title") == null) {
+            throw new IllegalArgumentException("Пришла пустая строка в название фильма");
+        }
+        film.setGenres(ControllerUtils.getSetGenres(form));
+        if (file != null) {
+            ControllerUtils.savePicture(film, file);
+        }
+
+        if (!form.get("description").isEmpty()) {
+            film.setTitle(form.get("description"));
+        }
+        film.setTitle(form.get("title"));
+
+        filmRepository.save(film);
+
+        URI uri = new URI("/poster/" + film.getTitle().replace(" ", "%20"));
+
+        model.addAttribute("film", film);
+        return "redirect:" + uri.toASCIIString();
+    }
 }

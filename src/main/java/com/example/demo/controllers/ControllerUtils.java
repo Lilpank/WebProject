@@ -1,17 +1,23 @@
 package com.example.demo.controllers;
 
-import com.example.demo.models.Comment;
 import com.example.demo.models.Film;
-import com.example.demo.models.Rating;
+import com.example.demo.models.Genres;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class ControllerUtils {
-    static Map<String, String> getErrors(BindingResult bindingResult) {
+    @Value("${upload.path}")
+    private static String uploadPath;
+
+    public static Map<String, String> getErrors(BindingResult bindingResult) {
         Collector<FieldError, ?, Map<String, String>> collector = Collectors.toMap(
                 fieldError -> fieldError.getField() + "Error",
                 FieldError::getDefaultMessage
@@ -19,23 +25,33 @@ public class ControllerUtils {
         return bindingResult.getFieldErrors().stream().collect(collector);
     }
 
-    static Integer getMean_rating(Film film) {
-        int mean_rating = 0;
-        for (Rating ratings : film.getRating()) {
-            if (ratings.getValue() != null) {
-                mean_rating = mean_rating + ratings.getValue();
+    public static void savePicture(Film film, MultipartFile file) throws IOException {
+        if (file != null && !Objects.requireNonNull(file.getOriginalFilename()).isEmpty() && uploadPath != null) {
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdir();
             }
-        }
+            String uuidFile = UUID.randomUUID().toString();
+            String resultFilename = uuidFile + '.' + file.getOriginalFilename();
 
-        int count = 0;
-        if (film.getComments().size() != 0) {
-            for (Comment comm : film.getComments()) {
-                if (comm != null) {
-                    count = count + 1;
+            file.transferTo(new File(uploadPath + "/" + resultFilename));
+            film.setFilename(resultFilename);
+        }
+    }
+
+    public static Set<Genres> getSetGenres(Map<String, String> form) {
+        Set<String> genres = Arrays.stream(Genres.values())
+                .map(Genres::name)
+                .collect(Collectors.toSet());
+
+        Set<Genres> temp = new HashSet<>();
+        for (String key : form.keySet()) {
+            if (genres.contains(key)) {
+                if (key != null) {
+                    temp.add(Genres.valueOf(key));
                 }
             }
-            mean_rating = mean_rating / count;
         }
-        return mean_rating;
+        return temp;
     }
 }
