@@ -2,7 +2,6 @@ package com.example.demo.controllers;
 
 import com.example.demo.models.Film;
 import com.example.demo.models.Genres;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,9 +13,6 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class ControllerUtils {
-    @Value("${upload.path}")
-    private static String uploadPath;
-
     public static Map<String, String> getErrors(BindingResult bindingResult) {
         Collector<FieldError, ?, Map<String, String>> collector = Collectors.toMap(
                 fieldError -> fieldError.getField() + "Error",
@@ -25,7 +21,7 @@ public class ControllerUtils {
         return bindingResult.getFieldErrors().stream().collect(collector);
     }
 
-    public static void savePicture(Film film, MultipartFile file) throws IOException {
+    public static void savePicture(Film film, MultipartFile file, String uploadPath) throws IOException {
         if (file != null && !Objects.requireNonNull(file.getOriginalFilename()).isEmpty() && uploadPath != null) {
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) {

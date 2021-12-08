@@ -33,7 +33,6 @@ public class MainController {
         } else if (filter == null) {
             films = filmRepository.findAll();
         }
-
         model.addAttribute("films", films);
         model.addAttribute("filter", filter);
 

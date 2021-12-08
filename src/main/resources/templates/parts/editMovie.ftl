@@ -7,4 +7,12 @@
     </#if>
 </#macro>
 
+<#macro deleteFilm title>
+    <#if isAdmin>
+        <form action="${title}/delete" method="get">
+            <button type="submit" class="btn btn-outline-primary">Delete film</button>
+        </form>
+    </#if>
+</#macro>
+
 

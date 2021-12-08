@@ -16,9 +16,6 @@ import java.util.Map;
 @Controller
 public class RegistrationController {
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private UserService userService;
 
 

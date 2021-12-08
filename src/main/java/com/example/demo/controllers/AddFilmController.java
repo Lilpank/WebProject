@@ -21,6 +21,9 @@ import java.util.Map;
 
 @Controller
 public class AddFilmController {
+    @Value("${upload.path}")
+    private String uploadPath;
+
     private final FilmRepository filmRepository;
 
     public AddFilmController(FilmRepository filmRepository) {
@@ -54,7 +57,7 @@ public class AddFilmController {
 
         } else {
             film.setGenres(ControllerUtils.getSetGenres(form));
-            ControllerUtils.savePicture(film, file);
+            ControllerUtils.savePicture(film, file, uploadPath);
             model.addAttribute("film", null);
             filmRepository.save(film);
         }

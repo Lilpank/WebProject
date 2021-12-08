@@ -20,7 +20,7 @@
                     by people
                 </p>
                 <p>
-                    <#if !film.getRating()?size??>
+                    <#if film.getRating()?size != 0>
                         <#assign total = 0>
                         <#list film.rating as item>
                             <#assign total += item.value>
@@ -34,6 +34,9 @@
             </div>
             <div class="col-md-8">
                 <@edit.editMovie film.title film.author.getId()>
+                </@>
+                <@edit.deleteFilm film.title>
+
                 </@>
                 <div class="m-2">
                     <h1>
@@ -54,13 +57,11 @@
                     </h3>
                     <#list film.comments as comment>
                         <div class="col-md-12 pb-3">
-                            <div class="col-md-1">
-                                <#if comment.rating.value??>
-                                    ${comment.rating.value!}
-                                <#else >
-                                    0
-                                </#if>
-                                ${comment.user.username}
+                            <div>
+                                <nobr>
+                                    ${comment.rating.value}
+                                    ${comment.user.username}:
+                                </nobr>
                             </div>
                             <div>
                                 ${comment.comment}

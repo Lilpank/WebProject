@@ -27,7 +27,7 @@ import java.util.*;
 @RequestMapping("/poster")
 public class PosterController {
     @Value("${upload.path}")
-    private static String uploadPath;
+    private String uploadPath;
 
     @Autowired
     private FilmRepository filmRepository;
@@ -38,7 +38,7 @@ public class PosterController {
 
     @GetMapping("{title}")
     public String getPageFilm(Model model, @PathVariable String title) {
-        Film film = filmRepository.findByTitleOrderByCommentsDesc(title);
+        Film film = filmRepository.findByTitle(title);
         if (film.getView() != null) {
             Integer countView = film.getView() + 1;
             film.setView(countView);
@@ -52,13 +52,7 @@ public class PosterController {
     }
 
     @PostMapping("{title}")
-    public String addComment(
-            @AuthenticationPrincipal User user,
-            @RequestParam int value,
-            @RequestParam String comment,
-            Model model,
-            @PathVariable String title
-    ) {
+    public String addComment(@AuthenticationPrincipal User user, @RequestParam int value, @RequestParam String comment, Model model, @PathVariable String title) {
         Film film = filmRepository.findByTitle(title);
         Rating rating = new Rating(user, value);
 
@@ -79,12 +73,7 @@ public class PosterController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("{title}/{user}")
-    public String getEditFilm(
-            @PathVariable String title,
-            @PathVariable User user,
-            Model model,
-            @RequestParam(required = false) Film film
-    ) {
+    public String getEditFilm(@PathVariable String title, Model model, @PathVariable String user) {
         Film oneFilm = filmRepository.findByTitle(title);
 
         model.addAttribute("film", oneFilm);
@@ -93,18 +82,13 @@ public class PosterController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @RequestMapping("{title}/update")
-    public String updateFilm(
-            Model model,
-            @RequestParam("id") Film film,
-            @RequestParam("file") MultipartFile file,
-            @RequestParam Map<String, String> form
-    ) throws URISyntaxException, IOException {
+    public String updateFilm(Model model, @RequestParam("id") Film film, @RequestParam("file") MultipartFile file, @RequestParam Map<String, String> form) throws URISyntaxException, IOException {
         if (form.get("title") == null) {
             throw new IllegalArgumentException("Пришла пустая строка в название фильма");
         }
         film.setGenres(ControllerUtils.getSetGenres(form));
         if (file != null) {
-            ControllerUtils.savePicture(film, file);
+            ControllerUtils.savePicture(film, file, uploadPath);
         }
 
         if (!form.get("description").isEmpty()) {
@@ -118,5 +102,14 @@ public class PosterController {
 
         model.addAttribute("film", film);
         return "redirect:" + uri.toASCIIString();
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @RequestMapping("{title}/delete")
+    public String deleteFilm(Model model, @PathVariable String title){
+        filmRepository.delete(filmRepository.findByTitle(title));
+
+        model.addAttribute("films", filmRepository.findAll());
+        return "redirect:main";
     }
 }
